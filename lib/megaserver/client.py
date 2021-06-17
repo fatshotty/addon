@@ -15,6 +15,10 @@ from lib.megaserver.handler import Handler
 from platformcode import logger
 from lib.megaserver.server import Server
 
+from lib.http_server.http_server import GET_KOD_SERVER, ADD_NAMESPACE, GET_ADDRESS
+
+
+NAMESPACE = 'mega'
 
 class Client(object):
     VIDEO_EXTS = {'.avi': 'video/x-msvideo', '.mp4': 'video/mp4', '.mkv': 'video/x-matroska',
@@ -23,67 +27,75 @@ class Client(object):
 
     def __init__(self, url, port=None, ip=None, auto_shutdown=True, wait_time=20, timeout=5, is_playing_fnc=None):
 
-        self.port = port if port else random.randint(8000,8099)
-        self.ip = ip if ip else "127.0.0.1"
-        self.connected = False
-        self.start_time = None
-        self.last_connect = None
-        self.is_playing_fnc = is_playing_fnc
-        self.auto_shutdown =  auto_shutdown
-        self.wait_time =  wait_time
-        self.timeout =  timeout
-        self.running = False
-        self.file = None
-        self.files = []
+        # self.port = port if port else random.randint(8000,8099)
+        # self.ip = ip if ip else "127.0.0.1"
+        # self.connected = False
+        # self.start_time = None
+        # self.last_connect = None
+        # self.is_playing_fnc = is_playing_fnc
+        # self.auto_shutdown =  auto_shutdown
+        # self.wait_time =  wait_time
+        # self.timeout =  timeout
+        # self.running = False
+        # self.file = None
+        # self.files = []
 
-        self._server = Server((self.ip, self.port), Handler, client=self)
+        self._server = GET_KOD_SERVER()
+        self._handler = Handler(self)
+
+        ADD_NAMESPACE( NAMESPACE, self._handler )
+
+        # self._server = Server((self.ip, self.port), Handler, client=self)
         self.add_url(url)
-        self.start()
+        # self.start()
 
     def start(self):
-        self.start_time = time.time()
-        self.running = True
-        self._server.run()
-        t= Thread(target=self._auto_shutdown)
-        t.setDaemon(True)
-        t.start()
-        logger.info("MEGA Server Started")
+        # self.start_time = time.time()
+        # self.running = True
+        # self._server.run()
+        # t= Thread(target=self._auto_shutdown)
+        # t.setDaemon(True)
+        # t.start()
+        # logger.info("MEGA Server Started")
+        pass
 
     def _auto_shutdown(self):
-        while self.running:
-            time.sleep(1)
-            if self.file and self.file.cursor:
-                self.last_connect = time.time()
+        # while self.running:
+        #     time.sleep(1)
+        #     if self.file and self.file.cursor:
+        #         self.last_connect = time.time()
 
-            if self.is_playing_fnc and  self.is_playing_fnc():
-                self.last_connect = time.time()
+        #     if self.is_playing_fnc and  self.is_playing_fnc():
+        #         self.last_connect = time.time()
 
-            if self.auto_shutdown:
-                #shudown por haber cerrado el reproductor
-                if self.connected and self.last_connect and self.is_playing_fnc and not self.is_playing_fnc():
-                    if time.time() - self.last_connect - 1 > self.timeout:
-                        self.stop()
+        #     if self.auto_shutdown:
+        #         #shudown por haber cerrado el reproductor
+        #         if self.connected and self.last_connect and self.is_playing_fnc and not self.is_playing_fnc():
+        #             if time.time() - self.last_connect - 1 > self.timeout:
+        #                 self.stop()
 
-                #shutdown por no realizar ninguna conexion
-                if (not self.file or not self.file.cursor) and self.start_time and self.wait_time and not self.connected:
-                    if time.time() - self.start_time - 1 > self.wait_time:
-                        self.stop()
+        #         #shutdown por no realizar ninguna conexion
+        #         if (not self.file or not self.file.cursor) and self.start_time and self.wait_time and not self.connected:
+        #             if time.time() - self.start_time - 1 > self.wait_time:
+        #                 self.stop()
 
-                #shutdown tras la ultima conexion
-                if (not self.file or not self.file.cursor) and self.timeout and self.connected and self.last_connect and not self.is_playing_fnc:
-                    if time.time() - self.last_connect - 1 > self.timeout:
-                        self.stop()
+        #         #shutdown tras la ultima conexion
+        #         if (not self.file or not self.file.cursor) and self.timeout and self.connected and self.last_connect and not self.is_playing_fnc:
+        #             if time.time() - self.last_connect - 1 > self.timeout:
+        #                 self.stop()
+        pass
 
     def stop(self):
-        self.running = False
-        self._server.stop()
-        logger.info("MEGA Server Stopped")
+        # self.running = False
+        # self._server.stop()
+        # logger.info("MEGA Server Stopped")
+        pass
 
     def get_play_list(self):
         if len(self.files) > 1:
-            return "http://" + self.ip + ":" + str(self.port) + "/playlist.pls"
+            return "http://" + (GET_ADDRESS + '/' + NAMESPACE) + "/playlist.pls"
         else:
-            return "http://" + self.ip + ":" + str(self.port) + "/" + urllib.quote(self.files[0].name.encode("utf8"))
+            return "http://" + (GET_ADDRESS + '/' + NAMESPACE) + "/" + urllib.quote(self.files[0].name.encode("utf8"))
 
     def get_files(self):
         files = []
@@ -91,7 +103,7 @@ class Client(object):
         if self.files:
             for file in self.files:
                 n = file.name.encode("utf8")
-                u = "http://" + self.ip + ":" + str(self.port) + "/" + urllib.quote(n)
+                u = "http://" + (GET_ADDRESS + '/' + NAMESPACE) + "/" + urllib.quote(n)
                 s = file.size
                 file_id = file.file_id
                 enc_url = file.url

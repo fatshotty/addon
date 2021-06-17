@@ -15,8 +15,7 @@ from lib.megaserver.handler import Handler
 from platformcode import logger
 from lib.megaserver.server import Server
 
-from lib.http_server.http_server import GET_KOD_SERVER, ADD_NAMESPACE, GET_ADDRESS
-
+from lib.httpserver.http_server import GET_KOD_SERVER, ADD_NAMESPACE, GET_ADDRESS
 
 NAMESPACE = 'mega'
 
@@ -24,6 +23,8 @@ class Client(object):
     VIDEO_EXTS = {'.avi': 'video/x-msvideo', '.mp4': 'video/mp4', '.mkv': 'video/x-matroska',
                   '.m4v': 'video/mp4', '.mov': 'video/quicktime', '.mpg': 'video/mpeg','.ogv': 'video/ogg',
                   '.ogg': 'video/ogg', '.webm': 'video/webm', '.ts': 'video/mp2t', '.3gp': 'video/3gpp'}
+
+    handler  = None
 
     def __init__(self, url, port=None, ip=None, auto_shutdown=True, wait_time=20, timeout=5, is_playing_fnc=None):
 
@@ -40,10 +41,7 @@ class Client(object):
         # self.file = None
         # self.files = []
 
-        self._server = GET_KOD_SERVER()
-        self._handler = Handler(self)
-
-        ADD_NAMESPACE( NAMESPACE, self._handler )
+        self.handler = Handler(self)
 
         # self._server = Server((self.ip, self.port), Handler, client=self)
         self.add_url(url)
@@ -93,9 +91,9 @@ class Client(object):
 
     def get_play_list(self):
         if len(self.files) > 1:
-            return "http://" + (GET_ADDRESS + '/' + NAMESPACE) + "/playlist.pls"
+            return "http://" + (GET_ADDRESS() + '/' + NAMESPACE) + "/playlist.pls"
         else:
-            return "http://" + (GET_ADDRESS + '/' + NAMESPACE) + "/" + urllib.quote(self.files[0].name.encode("utf8"))
+            return "http://" + (GET_ADDRESS() + '/' + NAMESPACE) + "/" + urllib.quote(self.files[0].name.encode("utf8"))
 
     def get_files(self):
         files = []
@@ -103,7 +101,7 @@ class Client(object):
         if self.files:
             for file in self.files:
                 n = file.name.encode("utf8")
-                u = "http://" + (GET_ADDRESS + '/' + NAMESPACE) + "/" + urllib.quote(n)
+                u = "http://" + (GET_ADDRESS() + '/' + NAMESPACE) + "/" + urllib.quote(n)
                 s = file.size
                 file_id = file.file_id
                 enc_url = file.url

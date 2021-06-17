@@ -81,6 +81,8 @@ class Handler():
 
         else:
             response_status(404, 'Not Found')
+            end_headers()
+            response.flush()
             proceed = False
 
         if proceed:

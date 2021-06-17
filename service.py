@@ -276,6 +276,18 @@ if __name__ == "__main__":
     except:
         logger.error(traceback.format_exc())
 
+
+
+    """
+    " Startup for webserver
+    """
+    from lib.httpserver.http_server import GET_KOD_SERVER, GET_ADDRESS
+    webserver = GET_KOD_SERVER()
+    web_address = GET_ADDRESS()
+
+    config.set_setting('web_server_address', web_address)
+
+
     while True:
         try:
             schedule.run_pending()
@@ -285,4 +297,7 @@ if __name__ == "__main__":
         if monitor.waitForAbort(1):  # every second
             # db need to be closed when not used, it will cause freezes
             db.close()
+
+            # stop webserver
+            webserver.stop()
             break

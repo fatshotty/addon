@@ -6,7 +6,7 @@ if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 import json
 import random
 from core import httptools, support, scrapertools
-from platformcode import platformtools, logger
+from platformcode import platformtools, logger, config
 from lib.streamingcommunity import Client as SCClient
 
 files = None
@@ -20,11 +20,18 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     video_urls = []
 
-    global c
-    c = SCClient("",video_id=page_url, is_playing_fnc=platformtools.is_playing)
+    # global c
+    # c = SCClient("",video_id=page_url, is_playing_fnc=platformtools.is_playing)
 
-    media_url = c.get_manifest_url()
+    # media_url = c.get_manifest_url()
 
-    video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:] + " [Streaming Community]", media_url])
+    # video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:] + " [Streaming Community]", media_url])
+
+    # return video_urls
+
+    webserver_address = config.get_setting('web_server_address')
+    stream_url = 'http://' + webserver_address + '/streamingcommunity/init?' + str(page_url)
+
+    video_urls.append(['Remote' + " [Streaming Community]", stream_url])
 
     return video_urls

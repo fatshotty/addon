@@ -16,27 +16,35 @@ from lib.streamingcommunity.handler import Handler
 from platformcode import logger
 from lib.streamingcommunity.server import Server
 
+NAMESPACE = 'streamingcommunity'
+
+
+def get_klass():
+    return Client
 
 class Client(object):
 
-    def __init__(self, url, port=None, ip=None, auto_shutdown=True, wait_time=20, timeout=5, is_playing_fnc=None, video_id=None):
+    handle = None
 
-        self.port = port if port else random.randint(8000,8099)
-        self.ip = ip if ip else "127.0.0.1"
-        self.connected = False
-        self.start_time = None
-        self.last_connect = None
-        self.is_playing_fnc = is_playing_fnc
-        self.auto_shutdown =  auto_shutdown
-        self.wait_time =  wait_time
-        self.timeout =  timeout
-        self.running = False
-        self.file = None
-        self.files = []
+    def __init__(self, url):
 
+        # self.port = port if port else random.randint(8000,8099)
+        # self.ip = ip if ip else "127.0.0.1"
+        # self.connected = False
+        # self.start_time = None
+        # self.last_connect = None
+        # self.is_playing_fnc = is_playing_fnc
+        # self.auto_shutdown =  auto_shutdown
+        # self.wait_time =  wait_time
+        # self.timeout =  timeout
+        # self.running = False
+        # self.file = None
+        # self.files = []
 
         # video_id is the ID in the webpage path
-        self._video_id = video_id
+        self._video_id = url
+
+        self.handler = Handler(self)
 
         # Get json_data for entire details from video page
         jsonDataStr = httptools.downloadpage('https://streamingcommunityws.com/videos/1/{}'.format(self._video_id), CF=False ).data
@@ -48,58 +56,59 @@ class Client(object):
         self._token, self._expires = self.calculateToken( self._jsonData['client_ip'] )
 
         # Starting web server
-        self._server = Server((self.ip, self.port), Handler, client=self)
-        self.start()
+        # self._server = Server((self.ip, self.port), Handler, client=self)
+        # self.start()
 
+    def initialization(self):
+        return self.get_manifest_url()
 
+    # def start(self):
+    #     """
+    #     " Starting client and server in a separated thread
+    #     """
+    #     self.start_time = time.time()
+    #     self.running = True
+    #     self._server.run()
+    #     t= Thread(target=self._auto_shutdown)
+    #     t.setDaemon(True)
+    #     t.start()
+    #     logger.info("SC Server Started", (self.ip, self.port))
 
-    def start(self):
-        """
-        " Starting client and server in a separated thread
-        """
-        self.start_time = time.time()
-        self.running = True
-        self._server.run()
-        t= Thread(target=self._auto_shutdown)
-        t.setDaemon(True)
-        t.start()
-        logger.info("SC Server Started", (self.ip, self.port))
+    # def _auto_shutdown(self):
+    #     while self.running:
+    #         time.sleep(1)
+    #         if self.file and self.file.cursor:
+    #             self.last_connect = time.time()
 
-    def _auto_shutdown(self):
-        while self.running:
-            time.sleep(1)
-            if self.file and self.file.cursor:
-                self.last_connect = time.time()
+    #         if self.is_playing_fnc and  self.is_playing_fnc():
+    #             self.last_connect = time.time()
 
-            if self.is_playing_fnc and  self.is_playing_fnc():
-                self.last_connect = time.time()
+    #         if self.auto_shutdown:
+    #             #shudown por haber cerrado el reproductor
+    #             if self.connected and self.last_connect and self.is_playing_fnc and not self.is_playing_fnc():
+    #                 if time.time() - self.last_connect - 1 > self.timeout:
+    #                     self.stop()
 
-            if self.auto_shutdown:
-                #shudown por haber cerrado el reproductor
-                if self.connected and self.last_connect and self.is_playing_fnc and not self.is_playing_fnc():
-                    if time.time() - self.last_connect - 1 > self.timeout:
-                        self.stop()
+    #             #shutdown por no realizar ninguna conexion
+    #             if (not self.file or not self.file.cursor) and self.start_time and self.wait_time and not self.connected:
+    #                 if time.time() - self.start_time - 1 > self.wait_time:
+    #                     self.stop()
 
-                #shutdown por no realizar ninguna conexion
-                if (not self.file or not self.file.cursor) and self.start_time and self.wait_time and not self.connected:
-                    if time.time() - self.start_time - 1 > self.wait_time:
-                        self.stop()
+    #             #shutdown tras la ultima conexion
+    #             if (not self.file or not self.file.cursor) and self.timeout and self.connected and self.last_connect and not self.is_playing_fnc:
+    #                 if time.time() - self.last_connect - 1 > self.timeout:
+    #                     self.stop()
 
-                #shutdown tras la ultima conexion
-                if (not self.file or not self.file.cursor) and self.timeout and self.connected and self.last_connect and not self.is_playing_fnc:
-                    if time.time() - self.last_connect - 1 > self.timeout:
-                        self.stop()
-
-    def stop(self):
-        self.running = False
-        self._server.stop()
-        logger.info("SC Server Stopped")
+    # def stop(self):
+    #     self.running = False
+    #     self._server.stop()
+    #     logger.info("SC Server Stopped")
 
 
     def get_manifest_url(self):
         # remap request path for main manifest
         # it must point to local server ip:port
-        return "http://" + self.ip + ":" + str(self.port) + "/manifest.m3u8"
+        return '/' + NAMESPACE + '/manifest.m3u8'
 
 
     def get_main_manifest_content(self):
@@ -124,7 +133,7 @@ class Client(object):
         for match in r_video.finditer(m3u8_original):
             line = match.groups()[0]
             res = match.groups()[1]
-            video_url = "/video/" + res + ".m3u8"
+            video_url = '/' + NAMESPACE + "/video/" + res + ".m3u8"
 
             # logger.info('replace', match.groups(), line, res, video_url)
 
@@ -134,7 +143,7 @@ class Client(object):
         for match in r_audio.finditer(m3u8_original):
             line = match.groups()[0]
             res = match.groups()[1]
-            audio_url = "/audio/" + res + ".m3u8"
+            audio_url = '/' + NAMESPACE + "/audio/" + res + ".m3u8"
 
             # logger.info('replace', match.groups(), line, res, audio_url)
 
@@ -162,7 +171,7 @@ class Client(object):
         " the remote domain switching from `default_start` to `default_count` values
         """
 
-        m_video = re.search( r'\/video\/(\d+p)\.m3u8', url)
+        m_video = re.search( r'\/?video\/(\d+p)\.m3u8', url)
         video_res = m_video.groups()[0]
 
         logger.info('Video res: ', video_res)
@@ -215,7 +224,7 @@ class Client(object):
         " this method remap each video chunks url in order to make them point to
         " the remote domain switching from `default_start` to `default_count` values
         """
-        m_audio = re.search( r'\/audio\/(\d+k)\.m3u8', url)
+        m_audio = re.search( r'\/?audio\/(\d+k)\.m3u8', url)
         audio_res = m_audio.groups()[0]
 
         logger.info('Audio res: ', audio_res)

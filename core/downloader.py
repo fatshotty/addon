@@ -19,6 +19,8 @@ metodos:
 """
 from __future__ import division
 from future import standard_library
+from core import support
+
 
 from core.item import Item
 
@@ -202,6 +204,8 @@ class Downloader(object):
         self._json_path = json_path
         self._json_text = ''
         self._json_item = Item()
+
+        self._original_video_url = url
 
         try:
             import xbmc
@@ -497,10 +501,25 @@ class Downloader(object):
         self.file = filetools.file_open(filetools.join(self.tmp_path, self._filename + ".part%s" % id), "a+", vfs=VFS)
         self.file.close()
         self.file = filetools.file_open(filetools.join(self.tmp_path, self._filename + ".part%s" % id), "r+b", vfs=VFS)
-        file.seek(self._download_info["parts"][id]["current"] - self._download_info["parts"][id]["start"], 0)
-        return file
+        self.file.seek(self._download_info["parts"][id]["current"] - self._download_info["parts"][id]["start"], 0)
+        return self.file
 
     def __start_part__(self):
+        support.dbg()
+        import xbmc, xbmcaddon
+        import time
+        
+        info = {'url': self._original_video_url, 'title': self._filename, # 'thumbnail': thumbnail,
+                'id': int(time.time()), 'media_type': 'video'}
+
+        yt_dl_addon = xbmcaddon.Addon('script.module.youtube.dl')
+        addon_dir = xbmc.translatePath( yt_dl_addon.getAddonInfo('path') )
+        sys.path.append(filetools.join( addon_dir, 'lib' ) )
+
+        import YDStreamExtractor
+        YDStreamExtractor.handleDownload(info, filename=self._filename, bg=False, path=filetools.join(self._path, self._filename))
+
+    def __start_part__old(self):
         logger.info("Thread Started: %s" % threading.current_thread().name)
         while self._state == self.states.downloading:
             id = self.__get_part_id__()

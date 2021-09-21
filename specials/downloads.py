@@ -578,10 +578,10 @@ def sort_method(item):
 
 def download_from_url(url, item):
     info("Attempting to download:", url)
-    if '.m3u8' in url.lower().split('|')[0] or url.lower().startswith("rtmp"):
-        save_server_statistics(item.server, 0, False)
-        platformtools.dialog_notification('m3u8 Download',config.get_localized_string(60364), sound=False)
-        return {"downloadStatus": STATUS_CODES.error}
+    # if '.m3u8' in url.lower().split('|')[0] or url.lower().startswith("rtmp"):
+    #     save_server_statistics(item.server, 0, False)
+    #     platformtools.dialog_notification('m3u8 Download',config.get_localized_string(60364), sound=False)
+    #     return {"downloadStatus": STATUS_CODES.error}
 
     # We get the download path and the file name
     item.downloadFilename = item.downloadFilename

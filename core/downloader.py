@@ -22,6 +22,8 @@ from future import standard_library
 
 from core.item import Item
 
+from core import support
+
 standard_library.install_aliases()
 from builtins import range
 from builtins import object
@@ -203,6 +205,8 @@ class Downloader(object):
         self._json_text = ''
         self._json_item = Item()
 
+        self._original_video_url = url
+
         try:
             import xbmc
             self.tmp_path = xbmc.translatePath("special://temp/")
@@ -218,9 +222,9 @@ class Downloader(object):
         self._buffer = {}
         self._seekable = True
 
-        self._threads = [Thread(target=self.__start_part__, name="Downloader %s/%s" % (x + 1, self._max_connections)) for x in range(self._max_connections)]
-        self._speed_thread = Thread(target=self.__speed_metter__, name="Speed Meter")
-        self._save_thread = Thread(target=self.__save_file__, name="File Writer")
+        self._threads = [] # [Thread(target=self.__start_part__, name="Downloader %s/%s" % (x + 1, self._max_connections)) for x in range(self._max_connections)]
+        self._speed_thread = None # Thread(target=self.__speed_metter__, name="Speed Meter")
+        self._save_thread = None # Thread(target=self.__save_file__, name="File Writer")
 
         # We update the headers
         self._headers.update(dict(headers))
@@ -256,6 +260,8 @@ class Downloader(object):
                 logger.error("Cannot do seek() or tell() in files larger than 2GB")
 
         self.__get_download_info__()
+
+        self.__start_part__()
 
         try:
             logger.info("Download started: Parts: %s | Path: %s | File: %s | Size: %s" % (str(len(self._download_info["parts"])), self._pathencode('utf-8'), self._filenameencode('utf-8'), str(self._download_info["size"])))
@@ -501,6 +507,26 @@ class Downloader(object):
         return file
 
     def __start_part__(self):
+        support.dbg()
+        import xbmc, xbmcaddon
+        import time
+
+        # xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id":1, "method": "Addons.SetAddonEnabled", "params": { "addonid": "script.module.youtube.dl", "enabled": true }}')
+        # xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id":1, "method": "Addons.SetAddonEnabled", "params": { "addonid": "script.module.addon.signals", "enabled": true }}')
+        # xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id":1, "method": "Addons.SetAddonEnabled", "params": { "addonid": "script.module.kodi-six", "enabled": true }}')
+        
+        info = {'url': self._original_video_url, 'title': self._filename, # 'thumbnail': thumbnail,
+                'id': int(time.time()), 'media_type': 'video'}
+
+        # yt_dl_addon = xbmcaddon.Addon('script.module.youtube.dl')
+        # addon_dir = xbmc.translatePath( yt_dl_addon.getAddonInfo('path') )
+        # sys.path.append(filetools.join( addon_dir, 'lib' ) )
+
+        from lib.youtube_dl_addon.lib import YDStreamExtractor
+        YDStreamExtractor.handleDownload(info, filename=self._filename, bg=False, path=filetools.join(self._path, self._filename))
+
+
+    def __start_part__old(self):
         logger.info("Thread Started: %s" % threading.current_thread().name)
         while self._state == self.states.downloading:
             id = self.__get_part_id__()

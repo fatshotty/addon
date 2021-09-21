@@ -49,6 +49,8 @@ from threading import Thread, Lock
 from core import filetools, jsontools
 from platformcode import logger, config
 
+from lib.ffmpeg.ffprobe import get_metadata_from_url
+
 
 class Downloader(object):
     @property
@@ -224,9 +226,9 @@ class Downloader(object):
         self._buffer = {}
         self._seekable = True
 
-        self._threads = [] # [Thread(target=self.__start_part__, name="Downloader %s/%s" % (x + 1, self._max_connections)) for x in range(self._max_connections)]
-        self._speed_thread = None # Thread(target=self.__speed_metter__, name="Speed Meter")
-        self._save_thread = None # Thread(target=self.__save_file__, name="File Writer")
+        self._threads = [Thread(target=self.__start_part__, name="Downloader %s/%s" % (x + 1, self._max_connections)) for x in range(self._max_connections)]
+        self._speed_thread = Thread(target=self.__speed_metter__, name="Speed Meter")
+        self._save_thread = Thread(target=self.__save_file__, name="File Writer")
 
         # We update the headers
         self._headers.update(dict(headers))
@@ -516,8 +518,16 @@ class Downloader(object):
         info = {'url': self._original_video_url, 'title': self._filename, # 'thumbnail': thumbnail,
                 'id': int(time.time()), 'media_type': 'video'}
 
-        from lib.youtube_dl_addon.lib import YDStreamExtractor
-        YDStreamExtractor.handleDownload(info, filename=self._filename, bg=False, path=filetools.join(self._path, self._filename))
+        jsonret = get_metadata_from_url(self._original_video_url)
+        if jsonret is not None:
+            logger.info( 'FFPROBE Video is: {} x {}'.format(jsonret['video']['width'],jsonret['video']['height'] ) )
+        else:
+            logger.warn('cannot execute FFROBE')
+
+
+
+        # from lib.youtube_dl_addon.lib import YDStreamExtractor
+        # YDStreamExtractor.handleDownload(info, filename=self._filename, bg=False, path=filetools.join(self._path, self._filename))
 
     def __start_part__old(self):
         logger.info("Thread Started: %s" % threading.current_thread().name)

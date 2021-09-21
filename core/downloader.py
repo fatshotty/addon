@@ -509,7 +509,7 @@ class Downloader(object):
         return self.file
 
     def __start_part__(self):
-        support.dbg()
+        # support.dbg()
         import xbmc, xbmcaddon
         import time
         

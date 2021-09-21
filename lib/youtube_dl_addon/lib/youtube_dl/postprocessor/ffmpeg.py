@@ -98,7 +98,9 @@ class FFmpegPostProcessor(PostProcessor):
         if self._downloader:
             prefer_ffmpeg = self._downloader.params.get('prefer_ffmpeg', True)
             location = self._downloader.params.get('ffmpeg_location')
-            location = '/usr/local/bin/ffmpeg'
+            # location = '/usr/local/bin/ffmpeg'
+
+            self._downloader.report_warning( 'FFMPEG location {}'.format(location) )
 
             if location is not None:
                 if not os.path.exists(location):

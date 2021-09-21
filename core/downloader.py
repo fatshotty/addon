@@ -19,6 +19,8 @@ metodos:
 """
 from __future__ import division
 from future import standard_library
+from core import support
+
 
 from core.item import Item
 
@@ -503,28 +505,19 @@ class Downloader(object):
         self.file = filetools.file_open(filetools.join(self.tmp_path, self._filename + ".part%s" % id), "a+", vfs=VFS)
         self.file.close()
         self.file = filetools.file_open(filetools.join(self.tmp_path, self._filename + ".part%s" % id), "r+b", vfs=VFS)
-        file.seek(self._download_info["parts"][id]["current"] - self._download_info["parts"][id]["start"], 0)
-        return file
+        self.file.seek(self._download_info["parts"][id]["current"] - self._download_info["parts"][id]["start"], 0)
+        return self.file
 
     def __start_part__(self):
         support.dbg()
         import xbmc, xbmcaddon
         import time
-
-        # xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id":1, "method": "Addons.SetAddonEnabled", "params": { "addonid": "script.module.youtube.dl", "enabled": true }}')
-        # xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id":1, "method": "Addons.SetAddonEnabled", "params": { "addonid": "script.module.addon.signals", "enabled": true }}')
-        # xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id":1, "method": "Addons.SetAddonEnabled", "params": { "addonid": "script.module.kodi-six", "enabled": true }}')
         
         info = {'url': self._original_video_url, 'title': self._filename, # 'thumbnail': thumbnail,
                 'id': int(time.time()), 'media_type': 'video'}
 
-        # yt_dl_addon = xbmcaddon.Addon('script.module.youtube.dl')
-        # addon_dir = xbmc.translatePath( yt_dl_addon.getAddonInfo('path') )
-        # sys.path.append(filetools.join( addon_dir, 'lib' ) )
-
         from lib.youtube_dl_addon.lib import YDStreamExtractor
         YDStreamExtractor.handleDownload(info, filename=self._filename, bg=False, path=filetools.join(self._path, self._filename))
-
 
     def __start_part__old(self):
         logger.info("Thread Started: %s" % threading.current_thread().name)

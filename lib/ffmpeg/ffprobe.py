@@ -7,11 +7,13 @@ def ffprobe_path():
   dirname = os.path.dirname(__file__)
   dirname = dirname.replace(' ', '\ ')
   # executable = os.path.join( dirname, '../../bin/ffprobe' )
-  executable = os.path.join( dirname, '../../bin/ffmpeg' )
-  if platform.system() == 'Windows':
-    executable = '{}.exe'.format( executable )
-  elif platform.system() == 'Android':
-    executable = '{}_arm64'.format( executable )
+  executable = os.path.join( dirname, '../../bin/ffmpeg_arm64' )
+  # if platform.system() == 'Windows':
+  #   executable = '{}.exe'.format( executable )
+  # elif platform.system() == 'Android':
+  #   executable = '{}_arm64'.format( executable )
+
+  logger.info('platform: {} - script: {}'.format(platform.system(), executable))
   
   return executable
 

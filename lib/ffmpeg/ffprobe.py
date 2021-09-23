@@ -10,7 +10,7 @@ def ffprobe_path():
   if platform.system() == 'Windows':
     executable = '{}.exe'.format( executable )
   elif platform.system() == 'Android':
-    pass
+    executable = '{}_arm64'.format( executable )
   
   return executable
 
@@ -21,16 +21,17 @@ def get_metadata_from_url(url):
   # ffmpegpath = os.path.join(os.path.dirname(__file__), '../bin/ffprobe')
   # '/Users/fatshotty/Library/Application\ Support/Kodi/addons/plugin.video.kod/core/../bin/ffprobe'
   ffmpegpath = ffprobe_path()
-  command = '{} -i "{}" -pretty  -show_streams -loglevel quiet -show_format -print_format json'.format(ffmpegpath, url)
+  command = '{} -i "{}"'.format(ffmpegpath, url)
 
   logger.info("COMMAND new path: {}".format(command) )
 
   try:
     childproces = subprocess.run(command, shell=True, capture_output=True, check=True)
-    logger.info("RET: {}".format(childproces.returncode) )
+    logger.info("RET-CODE: {}".format(childproces.returncode) )
     response = childproces.stdout
     # logger.info(response)
     responsestr = response.decode('utf-8')
+    logger.info("RET-STR: {}".format(responsestr) )
     json = jsontools.load(responsestr)
     return parse_response(json)
   except:

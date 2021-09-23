@@ -27,7 +27,8 @@ def get_metadata_from_url(url):
   command = '{} -i "{}"'.format(ffmpegpath, url)
 
   logger.info("COMMAND new path: {}".format(command) )
-
+  
+  childproces = None
   try:
     childproces = subprocess.run(command, shell=True, capture_output=True, check=True)
     logger.info("RET-CODE: {}".format(childproces.returncode) )
@@ -38,7 +39,10 @@ def get_metadata_from_url(url):
     json = jsontools.load(responsestr)
     return parse_response(json)
   except:
-    logger.error("Cannot use ffprobe - exit code is: {}".format(childproces.returncode) )
+    if childproces == None:
+      logger.error("Cannot execute ffprobe" )
+    else:
+      logger.error("Cannot use ffprobe - exit code is: {}".format(childproces.returncode) )
   
 
 

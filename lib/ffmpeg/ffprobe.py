@@ -6,7 +6,8 @@ from core import jsontools
 def ffprobe_path():
   dirname = os.path.dirname(__file__)
   dirname = dirname.replace(' ', '\ ')
-  executable = os.path.join( dirname, '../../bin/ffprobe' )
+  # executable = os.path.join( dirname, '../../bin/ffprobe' )
+  executable = os.path.join( dirname, '../../bin/ffmpeg' )
   if platform.system() == 'Windows':
     executable = '{}.exe'.format( executable )
   elif platform.system() == 'Android':
@@ -35,7 +36,7 @@ def get_metadata_from_url(url):
     json = jsontools.load(responsestr)
     return parse_response(json)
   except:
-    logger.warn("Cannot use ffprobe - exit code is: {}".format(childproces.returncode) )
+    logger.error("Cannot use ffprobe - exit code is: {}".format(childproces.returncode) )
   
 
 

@@ -522,7 +522,7 @@ class Downloader(object):
         if jsonret is not None:
             logger.info( 'FFPROBE Video is: {} x {}'.format(jsonret['video']['width'],jsonret['video']['height'] ) )
         else:
-            logger.warn('cannot execute FFROBE')
+            logger.error('cannot execute FFROBE')
 
 
 

@@ -12,8 +12,10 @@ def ffprobe_path():
   #   executable = '{}.exe'.format( executable )
   # elif platform.system() == 'Android':
   #   executable = '{}_arm64'.format( executable )
+  status = os.stat(executable)
+  permissions = oct(status.st_mode)
 
-  logger.info('platform: {} - script: {}'.format(platform.system(), executable))
+  logger.info('platform: {} - script: {} - perm: {}'.format(platform.system(), executable, permissions))
   
   return executable
 

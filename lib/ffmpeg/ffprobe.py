@@ -15,7 +15,8 @@ def ffprobe_path():
   #   executable = '{}_arm64'.format( executable )
 
   # move file into tempfolder
-  tempdir = tempfile.tempdir
+  tempdir = tempfile.gettempdir()
+  logger.info('tempdir is: {}'.format(tempdir))
   temporaryfile = os.path.join(tempdir, executable)
   logger.info('tempfile is: {}'.format(temporaryfile))
 

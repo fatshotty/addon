@@ -75,11 +75,12 @@ def get_metadata_from_url(url):
     logger.info("RET-STR: {}".format(responsestr) )
     json = jsontools.load(responsestr)
     return parse_response(json)
-  except:
+  except Exception  as ex:
     if childproces == None:
-      logger.error("Cannot execute ffprobe" )
+      logger.error("Cannot execute ffprobe", ex)
     else:
-      logger.error("Cannot use ffprobe - exit code is: {}".format(childproces.returncode) )
+      logger.error("Cannot use ffprobe - exit code is: {}".format(childproces.returncode), ex )
+    raise ex
   
 
 

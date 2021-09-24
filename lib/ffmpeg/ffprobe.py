@@ -67,6 +67,12 @@ def get_metadata_from_url(url):
   
   childproces = None
   try:
+    childproces = subprocess.run('chmod +x {}'.format(ffmpegpath), shell=True, capture_output=True, check=True)
+    logger.info("RET-CODE-chmod: {}".format(childproces.returncode) )
+  except Exception  as ex:
+    logger.error("Cannot change permission", ex)
+
+  try:
     childproces = subprocess.run(command, shell=True, capture_output=True, check=True)
     logger.info("RET-CODE: {}".format(childproces.returncode) )
     response = childproces.stdout

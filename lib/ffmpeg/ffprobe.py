@@ -42,12 +42,12 @@ def ffprobe_path():
 
     shutil.copy(fullexepath, temporaryfile)
 
-  status = os.stat(executable)
+  status = os.stat(temporaryfile)
   permissions = oct(status.st_mode)
   logger.info('current permission: {}'.format(permissions) )
 
   os.chmod(temporaryfile, 0o755)
-  status = os.stat(executable)
+  status = os.stat(temporaryfile)
   permissions = oct(status.st_mode)
 
   logger.info('platform: {} - script: {} - perm: {}'.format(platform.system(), temporaryfile, permissions))

@@ -1,25 +1,48 @@
 import subprocess,  os, platform
 from platformcode import logger
+import tempfile
+import shutil
 
 from core import jsontools
 
 def ffprobe_path():
-  dirname = os.path.dirname(__file__)
-  dirname = dirname.replace(' ', '\ ')
+
+  executable = 'ffmpeg_arm64'
   # executable = os.path.join( dirname, '../../bin/ffprobe' )
-  executable = os.path.join( dirname, '../../bin/ffmpeg_arm64' )
   # if platform.system() == 'Windows':
   #   executable = '{}.exe'.format( executable )
   # elif platform.system() == 'Android':
   #   executable = '{}_arm64'.format( executable )
-  os.chmod(executable, 0o755)
+
+  # move file into tempfolder
+  tempdir = tempfile.tempdir
+  temporaryfile = os.path.join(tempdir, executable)
+  logger.info('tempfile is: {}'.format(temporaryfile))
+
+  if not os.path.exists(temporaryfile):
+
+    logger.info('executable temp not exists, copy to temp')
+
+    dirname = os.path.dirname(__file__)
+    dirname = dirname.replace(' ', '\ ')
+
+    fullexepath = os.path.abspath( os.path.join( dirname, '../../bin/', executable ) )
+
+    logger.info('Original exe is: {}'.format(fullexepath) )
+
+    shutil.copy(fullexepath, temporaryfile)
+
+  status = os.stat(executable)
+  permissions = oct(status.st_mode)
+  logger.info('current permission: {}'.format(permissions) )
+
+  os.chmod(temporaryfile, 0o755)
   status = os.stat(executable)
   permissions = oct(status.st_mode)
 
-
-  logger.info('platform: {} - script: {} - perm: {}'.format(platform.system(), executable, permissions))
+  logger.info('platform: {} - script: {} - perm: {}'.format(platform.system(), temporaryfile, permissions))
   
-  return executable
+  return temporaryfile
 
 
 

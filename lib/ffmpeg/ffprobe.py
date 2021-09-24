@@ -7,6 +7,16 @@ from core import jsontools
 
 def ffprobe_path():
 
+  TEMP_DIR = None
+
+  try:
+      import xbmc
+      TEMP_DIR = xbmc.translatePath("special://temp/")
+      logger.info('use kodi for tempdir: {}'.format(TEMP_DIR) )
+  except:
+      TEMP_DIR = os.getenv("TEMP") or os.getenv("TMP") or os.getenv("TMPDIR")
+      logger.info('use ENV for tempdir: {}'.format(TEMP_DIR) )
+
   executable = 'ffmpeg_arm64'
   # executable = os.path.join( dirname, '../../bin/ffprobe' )
   # if platform.system() == 'Windows':
@@ -15,9 +25,8 @@ def ffprobe_path():
   #   executable = '{}_arm64'.format( executable )
 
   # move file into tempfolder
-  tempdir = tempfile.gettempdir()
-  logger.info('tempdir is: {}'.format(tempdir))
-  temporaryfile = os.path.join(tempdir, executable)
+  logger.info('tempdir is: {}'.format(TEMP_DIR))
+  temporaryfile = os.path.join(TEMP_DIR, executable)
   logger.info('tempfile is: {}'.format(temporaryfile))
 
   if not os.path.exists(temporaryfile):

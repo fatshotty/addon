@@ -7,15 +7,15 @@ from core import jsontools
 
 def ffprobe_path():
 
-  TEMP_DIR = None
+  TEMP_DIR = '/data/local/tmp/'
 
-  try:
-      import xbmc
-      TEMP_DIR = xbmc.translatePath("special://temp/")
-      logger.info('use kodi for tempdir: {}'.format(TEMP_DIR) )
-  except:
-      TEMP_DIR = os.getenv("TEMP") or os.getenv("TMP") or os.getenv("TMPDIR")
-      logger.info('use ENV for tempdir: {}'.format(TEMP_DIR) )
+  # try:
+  #     import xbmc
+  #     TEMP_DIR = xbmc.translatePath("special://temp/")
+  #     logger.info('use kodi for tempdir: {}'.format(TEMP_DIR) )
+  # except:
+  #     TEMP_DIR = os.getenv("TEMP") or os.getenv("TMP") or os.getenv("TMPDIR")
+  #     logger.info('use ENV for tempdir: {}'.format(TEMP_DIR) )
 
   executable = 'ffmpeg_arm64'
   # executable = os.path.join( dirname, '../../bin/ffprobe' )

@@ -4,7 +4,7 @@ import time
 from threading import Thread
 
 import xbmcgui
-from core import httptools
+from core import httptools, support
 from core import filetools
 from platformcode import config, platformtools
 from platformcode import logger
